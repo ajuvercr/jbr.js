@@ -1,0 +1,22 @@
+{
+  "name": "ldes-solid-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node --experimental-specifier-resolution=node node_modules/@ajuvercr/js-runner/bin/js-runner pipeline.ttl",
+    "postinstall": "cd node_modules/rml-mapper-processor-ts; npm install; npm run build",
+    "server": "npx community-solid-server -c ./server.json"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@ajuvercr/js-runner": "0.1.1",
+    "@treecg/sds-storage-writer-mongo": "^0.0.5",
+    "ldes-solid-server": "^0.0.10",
+    "rml-mapper-processor-ts": "github:julianrojas87/rml-mapper-processor-ts",
+    "sds-processors": "^0.0.3"
+  }
+}
