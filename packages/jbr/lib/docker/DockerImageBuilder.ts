@@ -1,6 +1,6 @@
-import type Dockerode from 'dockerode';
-import type { Logger } from 'winston';
-import type { ITaskContext } from '../../lib/task/ITaskContext';
+import type Dockerode from "dockerode";
+import type { Logger } from "winston";
+import type { ITaskContext } from "../../lib/task/ITaskContext";
 
 /**
  * Conveniently build a Docker image.
@@ -17,20 +17,28 @@ export class DockerImageBuilder {
    * @param options Image options
    */
   public async build(options: IDockerImageBuilderArgs): Promise<void> {
-    const buildStream = await this.dockerode.buildImage({
-      context: options.cwd,
-      src: [ options.dockerFile, ...options.auxiliaryFiles || [] ],
-    }, {
-      // eslint-disable-next-line id-length
-      t: options.imageName,
-      buildargs: options.buildArgs,
-      dockerfile: options.dockerFile,
-    });
+    const buildStream = await this.dockerode.buildImage(
+      {
+        context: options.cwd,
+        src: [options.dockerFile, ...(options.auxiliaryFiles || [])],
+      },
+      {
+        // eslint-disable-next-line id-length
+        t: options.imageName,
+        buildargs: options.buildArgs,
+        dockerfile: options.dockerFile,
+      },
+    );
     const output: any[] = await new Promise((resolve, reject) => {
       this.dockerode.modem.followProgress(
         buildStream,
-        (err: Error | null, res: any[]) => err ? reject(err) : resolve(res),
+        (err: Error | null, res: any[]) => (err ? reject(err) : resolve(res)),
         (data: any) => {
+          if (data.stream) {
+            console.log("docker", data.stream.trim());
+          } else {
+            console.log(data);
+          }
           if (data.stream && data.stream.trim()) {
             options.logger.verbose(data.stream.trim());
           }
@@ -49,7 +57,7 @@ export class DockerImageBuilder {
    */
   public getImageName(context: ITaskContext, suffix: string): string {
     let pathContext: string = context.experimentName;
-    if ('combination' in context.experimentPaths) {
+    if ("combination" in context.experimentPaths) {
       pathContext = `${pathContext}-combination_${context.experimentPaths.combination}`;
     }
     return `jbr-experiment-${pathContext}-${suffix}`;

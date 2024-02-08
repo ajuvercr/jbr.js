@@ -2,16 +2,19 @@
 # see all versions at https://hub.docker.com/r/oven/bun/tags
 FROM oven/bun:1 as base
 
+ARG FILES
+
 WORKDIR /tmp
 
 RUN bun install -g @ajuvercr/js-runner
 
 # install dependencies into temp directory
 # this will cache them and speed up future builds
-ADD $FILES /tmp/
+COPY input/ /tmp/
 RUN cd /tmp && bun install
 
 EXPOSE 8000
+EXPOSE 3001
 
-ENTRYPOINT [ "bunx", "js-runner", "pipeline.ttl"]
+ENTRYPOINT [ "bunx", "--bun", "js-runner"]
 

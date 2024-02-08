@@ -10,6 +10,7 @@ import { HookLdesSolidServer } from "./HookLdesSolidServer";
 export class HookHandlerLdesSolidServer extends HookHandler<HookLdesSolidServer> {
   public constructor() {
     super("ldes-solid-server", HookLdesSolidServer.name);
+    console.log("HookHandlerLdesSolidServer started");
   }
 
   public getDefaultParams(
@@ -39,28 +40,28 @@ export class HookHandlerLdesSolidServer extends HookHandler<HookLdesSolidServer>
     experimentPaths: IExperimentPaths,
     hookHandler: HookLdesSolidServer,
   ): Promise<void> {
-    console.log("Init hook handler")
-    // Create Dockerfile for client
-    if (
-      !(await fs.pathExists(Path.join(experimentPaths.input, "dockerfiles")))
-    ) {
-      await fs.mkdir(Path.join(experimentPaths.input, "dockerfiles"));
-    }
+    console.log("Init hook handler");
 
-    await fs.copyFile(
-      Path.join(__dirname, "templates", "dockerfiles", "Dockerfile-client"),
-      Path.join(experimentPaths.input, "dockerfiles", "Dockerfile-client"),
-    );
-
-    // Create config for client
     if (!(await fs.pathExists(Path.join(experimentPaths.input)))) {
       await fs.mkdir(Path.join(experimentPaths.input));
     }
 
+    // Create Dockerfile for client
+    if (
+      !(await fs.pathExists(Path.join(experimentPaths.root, "dockerfiles")))
+    ) {
+      await fs.mkdir(Path.join(experimentPaths.root, "dockerfiles"));
+    }
+
+    await fs.copyFile(
+      Path.join(__dirname, "templates", hookHandler.dockerfileClient),
+      Path.join(experimentPaths.root, hookHandler.dockerfileClient),
+    );
+
     for (let auxFile of hookHandler.auxiliaryFiles) {
       await fs.copyFile(
         Path.join(__dirname, "templates", auxFile),
-        Path.join(experimentPaths.input, auxFile),
+        Path.join(experimentPaths.root, auxFile),
       );
     }
   }

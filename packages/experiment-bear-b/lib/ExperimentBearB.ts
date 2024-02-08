@@ -88,8 +88,8 @@ export class ExperimentBearB implements Experiment {
 
   public async run(context: ITaskContext): Promise<void> {
     // Setup SPARQL endpoint
-    // const endpointProcessHandler = await this.hookLdesServer.start(context);
-    // const closeProcess = secureProcessHandler(endpointProcessHandler, context);
+    const endpointProcessHandler = await this.hookLdesServer.start(context);
+    const closeProcess = secureProcessHandler(endpointProcessHandler, context);
 
     // Warmup
     for (let i = 0; i < this.queryRunnerWarmupRounds; i++) {
@@ -134,7 +134,7 @@ export class ExperimentBearB implements Experiment {
     );
 
     // Close process safely
-    // await closeProcess();
+    await closeProcess();
   }
 
   /**
@@ -149,5 +149,8 @@ export class ExperimentBearB implements Experiment {
   public async clean(
     context: ITaskContext,
     cleanTargets: ICleanTargets,
-  ): Promise<void> {}
+  ): Promise<void> {
+    await this.hookLdesClient.clean(context, cleanTargets);
+    await this.hookLdesServer.clean(context, cleanTargets);
+  }
 }

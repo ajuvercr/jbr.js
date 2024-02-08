@@ -1,0 +1,74 @@
+@prefix js: <https://w3id.org/conn/js#>.
+@prefix ws: <https://w3id.org/conn/ws#>.
+@prefix : <https://w3id.org/conn#>.
+@prefix owl: <http://www.w3.org/2002/07/owl#>.
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
+@prefix sh: <http://www.w3.org/ns/shacl#>.
+@prefix fno: <https://w3id.org/function/ontology#>.
+@prefix fnom: <https://w3id.org/function/vocabulary/mapping#>.
+
+<> owl:imports <node_modules/@ajuvercr/js-runner/processor/echo.ttl>,
+  <node_modules/@ajuvercr/js-runner/processor/send.ttl>,
+  <node_modules/@ajuvercr/js-runner/channels/http.ttl>,
+  <node_modules/@ajuvercr/js-runner/channels/file.ttl>,
+  <node_modules/@ajuvercr/js-runner/processor/resc.ttl>,
+  <node_modules/@ajuvercr/js-runner/ontology.ttl>.
+
+[ ] a :Channel;
+  :reader <jr>.
+
+<jr> a :HttpReaderChannel;
+  :httpEndpoint "0.0.0.0";
+  :httpPort 3001.
+
+<> owl:imports <./node_modules/sds-processors/configs/ldesify.ttl>.
+[ ] a js:Ldesify;
+  js:input <jr>;
+  js:output <ldes-raw/writer>;
+  js:path <./state.json>.
+
+<ldes-raw/writer> a js:JsWriterChannel.
+<ldes-raw/reader> a js:JsReaderChannel.
+[ ] a js:JsChannel;
+  :reader <ldes-raw/reader>;
+  :writer <ldes-raw/writer>.
+
+<sds-raw/writer> a js:JsWriterChannel.
+<sds-raw/reader> a js:JsReaderChannel.
+[ ] a js:JsChannel;
+  :reader <sds-raw/reader>;
+  :writer <sds-raw/writer>.
+
+<> owl:imports <./node_modules/sds-processors/configs/sdsify.ttl>.
+[ ] a js:Sdsify;
+  js:input <ldes-raw/reader>;
+  js:output <sds-raw/writer>;
+  js:stream <https://w3id.org/sds#Stream>.
+
+<sds-raw/writer> a js:JsWriterChannel.
+<sds-raw/reader> a js:JsReaderChannel.
+[ ] a :FileChannel;
+  :reader <metadata/in>.
+
+<metadata/in> a :FileReaderChannel;
+  :fileReadFirstContent "true";
+  :fileOnReplace "true";
+  :filePath <./metadataIn.ttl>.
+
+<> owl:imports <./node_modules/@treecg/sds-storage-writer-mongo/step.ttl>.
+[ ] a js:Ingest;
+  js:dataInput <sds-raw/reader>;
+  js:metadataInput <metadata/in>;
+  js:database [
+    js:metadata "META";
+    js:data "DATA";
+    js:index "INDEX";
+    js:url [
+      a :EnvVariable;
+      :envDefault "mongodb://mongo:27017";
+      :envKey "DB_URL";
+    ];
+  ];
+  js:pageSize 150.
+

@@ -1,0 +1,117 @@
+@prefix owl: <http://www.w3.org/2002/07/owl#>.
+@prefix js: <https://w3id.org/conn/js#>.
+@prefix fno: <https://w3id.org/function/ontology#>.
+@prefix fnom: <https://w3id.org/function/vocabulary/mapping#>.
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
+@prefix : <https://w3id.org/conn#>.
+@prefix sh: <http://www.w3.org/ns/shacl#>.
+
+<> owl:imports <node_modules/@ajuvercr/js-runner/processor/echo.ttl>,
+  <node_modules/@ajuvercr/js-runner/processor/send.ttl>,
+  <node_modules/@ajuvercr/js-runner/channels/http.ttl>,
+  <node_modules/@ajuvercr/js-runner/channels/file.ttl>,
+  <node_modules/@ajuvercr/js-runner/processor/resc.ttl>,
+  <node_modules/@ajuvercr/js-runner/ontology.ttl>.
+
+js:SolidServer a js:JsProcess;
+  js:file <./test.js>;
+  js:function "test";
+  js:location <./>;
+  js:mapping [
+    a fno:Mapping;
+    fno:parameterMapping [
+      a fnom:PositionParameterMapping;
+      fnom:functionParameter "dbConfig";
+      fnom:implementationParameterPosition "0"^^xsd:int;
+    ], [
+      a fnom:PositionParameterMapping;
+      fnom:functionParameter "views";
+      fnom:implementationParameterPosition "1"^^xsd:int;
+    ];
+  ].
+
+[ ] a sh:NodeShape;
+  sh:targetClass js:DatabaseConfig;
+  sh:property [
+    sh:datatype xsd:string;
+    sh:path js:metadata;
+    sh:minCount 1;
+    sh:maxCount 1;
+    sh:name "metadata";
+    sh:description "Name of the metadata collection";
+  ], [
+    sh:datatype xsd:string;
+    sh:path js:data;
+    sh:minCount 1;
+    sh:maxCount 1;
+    sh:name "data";
+    sh:description "Name of the data collection";
+  ], [
+    sh:datatype xsd:string;
+    sh:path js:index;
+    sh:minCount 1;
+    sh:maxCount 1;
+    sh:name "index";
+    sh:description "Name of the index collection";
+  ], [
+    sh:datatype xsd:string;
+    sh:path js:url;
+    sh:maxCount 1;
+    sh:name "url";
+    sh:description "Collection url used to connect to the mongo database";
+  ].
+
+[ ] a sh:NodeShape;
+  sh:targetClass js:ViewConfig;
+  sh:property [
+    sh:datatype xsd:string;
+    sh:path js:description;
+    sh:minCount 1;
+    sh:maxCount 1;
+    sh:name "description";
+    sh:description "Description identifier";
+  ], [
+    sh:datatype xsd:string;
+    sh:path js:prefix;
+    sh:minCount 1;
+    sh:maxCount 1;
+    sh:name "prefix";
+    sh:description "HTTP prefix";
+  ], [
+    sh:datatype xsd:string;
+    sh:path js:stream;
+    sh:minCount 1;
+    sh:maxCount 1;
+    sh:name "stream";
+    sh:description "SDS stream identifier";
+  ].
+
+[ ] a sh:NodeShape;
+  sh:targetClass js:SolidServer;
+  sh:property [
+    sh:class js:DatabaseConfig;
+    sh:path js:database;
+    sh:name "dbConfig";
+    sh:maxCount 1;
+    sh:minCount 1;
+  ];
+  sh:property [
+    sh:class js:ViewConfig;
+    sh:path js:view;
+    sh:name "views";
+    sh:minCount 1;
+  ].
+
+[ ] a js:SolidServer;
+  js:database [
+    js:metadata "MUMO_META";
+    js:data "MUMO_DATA";
+    js:index "MUMO_INDEX";
+    js:url "mongodb://localhost:27017/mumotest"
+  ];
+  js:view [
+    js:prefix "default";
+    js:stream "https://w3id.org/sds#Stream";
+    js:description "http://localhost:3000/ldes/#timestampFragmentation"; 
+  ].
+

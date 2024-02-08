@@ -1,7 +1,7 @@
-import type Dockerode from 'dockerode';
-import * as fs from 'fs-extra';
-import { DockerContainerHandler } from './DockerContainerHandler';
-import type { DockerResourceConstraints } from './DockerResourceConstraints';
+import type Dockerode from "dockerode";
+import * as fs from "fs-extra";
+import { DockerContainerHandler } from "./DockerContainerHandler";
+import type { DockerResourceConstraints } from "./DockerResourceConstraints";
 
 /**
  * Conveniently create a Docker container.
@@ -17,7 +17,9 @@ export class DockerContainerCreator {
    * Start a container.
    * @param options Container options
    */
-  public async start(options: IDockerContainerCreatorArgs): Promise<DockerContainerHandler> {
+  public async start(
+    options: IDockerContainerCreatorArgs,
+  ): Promise<DockerContainerHandler> {
     // Initialize Docker container
     const container = await this.dockerode.createContainer({
       name: options.containerName,
@@ -28,9 +30,10 @@ export class DockerContainerCreator {
       AttachStdout: true,
       AttachStderr: true,
       HostConfig: {
-        ...options.hostConfig || {},
+        ...(options.hostConfig || {}),
         ...options.resourceConstraints?.toHostConfig(),
       },
+      Env: options.env || [],
     });
 
     // Attach output of container
@@ -41,12 +44,16 @@ export class DockerContainerCreator {
     });
 
     // Create container handler
-    const containerHandler = new DockerContainerHandler(container, out, options.statsFilePath);
+    const containerHandler = new DockerContainerHandler(
+      container,
+      out,
+      options.statsFilePath,
+    );
 
     // Write output to logs
     if (options.logFilePath) {
       // eslint-disable-next-line import/namespace
-      out.pipe(fs.createWriteStream(options.logFilePath, 'utf8'));
+      out.pipe(fs.createWriteStream(options.logFilePath, "utf8"));
     } else {
       out.resume();
     }
@@ -81,4 +88,5 @@ export interface IDockerContainerCreatorArgs {
   hostConfig?: Dockerode.HostConfig;
   logFilePath?: string;
   statsFilePath?: string;
+  env?: string[];
 }

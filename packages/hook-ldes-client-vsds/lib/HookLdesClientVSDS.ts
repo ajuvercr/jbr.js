@@ -12,24 +12,24 @@ import type {
  * A hook instance for a Comunica-based SPARQL endpoint.
  */
 export class HookLdesClientVSDS implements Hook {
+  public readonly ldesEndpoint: string;
   public readonly dockerfileClient: string;
   public readonly resourceConstraints: DockerResourceConstraints;
   public readonly clientLogLevel: string;
   public readonly type: string;
-  public readonly endpoint: string;
 
   public constructor(
+    ldesEndpoint: string,
     dockerfileClient: string,
     resourceConstraints: DockerResourceConstraints,
     clientLogLevel: string,
     type: string,
-    endpoint: string,
   ) {
     this.type = type;
     this.dockerfileClient = dockerfileClient;
     this.resourceConstraints = resourceConstraints;
     this.clientLogLevel = clientLogLevel;
-    this.endpoint = endpoint;
+    this.ldesEndpoint = ldesEndpoint;
   }
 
   public getDockerImageName(context: ITaskContext): string {
@@ -66,12 +66,12 @@ export class HookLdesClientVSDS implements Hook {
     context: ITaskContext,
     options?: IHookStartOptions,
   ): Promise<ProcessHandler> {
-    console.log("Starting ldes client on url", this.endpoint);
+    console.log("Starting ldes client on url", this.ldesEndpoint);
     return await context.docker.containerCreator.start({
       containerName: "ldes-client-" + this.type,
       imageName: "seacoal/ldes-client",
       resourceConstraints: this.resourceConstraints,
-      cmdArgs: [this.endpoint],
+      cmdArgs: [this.ldesEndpoint],
       logFilePath: Path.join(
         context.experimentPaths.output,
         "logs",
