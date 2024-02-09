@@ -14,8 +14,8 @@
   <node_modules/@ajuvercr/js-runner/ontology.ttl>.
 
 js:SolidServer a js:JsProcess;
-  js:file <./test.js>;
-  js:function "test";
+  js:file <./server.js>;
+  js:function "start";
   js:location <./>;
   js:mapping [
     a fno:Mapping;
