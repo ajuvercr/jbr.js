@@ -70,6 +70,7 @@ export class ExperimentBearB implements Experiment {
     //
     for (let i = 0; i < this.queryRunnerReplication; i++) {
       console.log("run", i, this.queryRunnerReplication);
+
       const hrstart = process.hrtime();
       const ldesClientHandler = await this.hookLdesClient.start(context);
       await ldesClientHandler.join();
