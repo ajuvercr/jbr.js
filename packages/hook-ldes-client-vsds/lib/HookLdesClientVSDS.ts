@@ -61,7 +61,7 @@ export class HookLdesClientVSDS implements Hook {
       ? await context.docker.networkCreator.find(this.networkName)
       : undefined;
 
-    console.log("Attaching to network", this.networkName, networkName);
+    console.log("Attaching to network", this.networkName);
 
     const container = await context.docker.containerCreator.start({
       containerName: "ldes-client",

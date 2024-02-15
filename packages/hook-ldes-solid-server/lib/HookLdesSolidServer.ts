@@ -21,6 +21,7 @@ export class HookLdesSolidServer implements Hook {
   public readonly auxiliaryFiles: string[];
   public readonly clientPort: number;
   public readonly env: string[];
+  public readonly pageSize: number;
   public readonly dataGlob: string[];
   public readonly ingestPort: number;
   public readonly networkName?: string;
@@ -30,6 +31,7 @@ export class HookLdesSolidServer implements Hook {
   public constructor(
     dockerfileClient: string,
     // auxiliaryFiles from templates, will be mapped to input
+    pageSize: number,
     auxiliaryFiles: string[],
     clientPort: number,
     env: string[],
@@ -38,6 +40,7 @@ export class HookLdesSolidServer implements Hook {
     networkName?: string,
     quiet?: boolean,
   ) {
+    this.pageSize = pageSize;
     console.log("HookLdesSolidServer started");
     this.dockerfileClient = dockerfileClient;
     this.auxiliaryFiles = auxiliaryFiles;
@@ -93,6 +96,9 @@ export class HookLdesSolidServer implements Hook {
         return [];
       }
     });
+    envs.push(`PAGE_SIZE=${this.pageSize}`);
+
+   
 
     // Create shared network
     const networkHandler = options?.docker?.network

@@ -70,5 +70,9 @@
       :envKey "DB_URL";
     ];
   ];
-  js:pageSize 150.
+  js:pageSize [
+    a :EnvVariable;
+    # :envDefault 150;
+    :envKey "PAGE_SIZE";
+  ].
 

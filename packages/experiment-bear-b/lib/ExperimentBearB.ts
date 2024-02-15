@@ -13,7 +13,7 @@ import {
 export class ExperimentBearB implements Experiment {
   public readonly hookLdesClient: Hook;
   public readonly hookLdesServer: Hook;
-  public readonly endpointUrl: string;
+  public readonly pageSize: number;
   public readonly queryRunnerReplication: number;
   public readonly queryRunnerWarmupRounds: number;
   public readonly queryRunnerRecordTimestamps: boolean;
@@ -23,7 +23,7 @@ export class ExperimentBearB implements Experiment {
   public constructor(
     hookLdesClient: Hook,
     hookLdesServer: Hook,
-    endpointUrl: string,
+    pageSize: number,
     queryRunnerReplication: number,
     queryRunnerWarmupRounds: number,
     queryRunnerRecordTimestamps: boolean,
@@ -31,7 +31,7 @@ export class ExperimentBearB implements Experiment {
   ) {
     this.hookLdesServer = hookLdesServer;
     this.hookLdesClient = hookLdesClient;
-    this.endpointUrl = endpointUrl;
+    this.pageSize = pageSize;
     this.queryRunnerReplication = queryRunnerReplication;
     this.queryRunnerWarmupRounds = queryRunnerWarmupRounds;
     this.queryRunnerRecordTimestamps = queryRunnerRecordTimestamps;
@@ -82,7 +82,7 @@ export class ExperimentBearB implements Experiment {
         count: 1,
         error: false,
         timestamps: [time],
-        metadata: { endpoint: this.endpointUrl },
+        metadata: { pageSize: this.pageSize },
       };
     }
 
@@ -99,7 +99,7 @@ export class ExperimentBearB implements Experiment {
       results,
       Path.join(resultsOutput, "client-times.csv"),
       false,
-      ["endpoint"],
+      ["pageSize"],
     );
 
     // Close process safely
