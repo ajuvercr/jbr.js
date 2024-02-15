@@ -19,8 +19,8 @@
   dcat:publisher [
     foaf:name "Arthur Vercruysse"
   ];
-  ldes:timestampPath <http://purl.org/dc/elements/1.1/modified>;
-  dcat:identifier <http://localhost:3000/ldes>.
+  ldes:timestampPath <http://www.w3.org/ns/prov#generatedAtTime>;
+  dcat:identifier <http://ldesserver:3000/ldes>.
 
 <https://w3id.org/sds#Stream> a sds:Stream;
     p-plan:wasGeneratedBy [

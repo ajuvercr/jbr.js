@@ -30,7 +30,7 @@ const basicConfig = {
     "css:config/storage/backend/data-accessors/memory.json",
     "css:config/storage/key-value/memory.json",
     "css:config/storage/middleware/default.json",
-    "css:config/util/auxiliary/acl.json",
+    "css:config/util/auxiliary/no-acl.json",
     "css:config/util/identifiers/suffix.json",
     "css:config/util/index/default.json",
     "css:config/util/logging/winston.json",
@@ -40,65 +40,37 @@ const basicConfig = {
   ],
   "@graph": [
     {
+      "@id": "urn:solid-server:default:ResourceStore_Backend",
       "comment":
         "A more complex example with 3 different stores being routed to.",
-      "@id": "urn:solid-server:default:ResourceStore_Backend",
-      "@type": "RoutingResourceStore",
-      "rule": {
-        "@id": "urn:solid-server:default:RouterRule",
-      },
-    },
-    {
-      "@id": "urn:solid-server:default:RouterRule",
-      "@type": "RegexRouterRule",
-      "base": {
-        "@id": "urn:solid-server:default:variable:baseUrl",
-      },
-      "rules": [
-        {
-          "@type": "RegexRule",
-          "regex": "^/(\\.acl|\\.meta)?$",
-          "store": {
-            "@id": "urn:solid-server:default:MemoryResourceStore",
-          },
+      "@type": "RepresentationConvertingStore",
+      "source": {
+        "@type": "LDESStore",
+        "id": "http://mine.org/testing",
+        "base": { "@id": "urn:solid-server:default:variable:baseUrl" },
+        "relativePath": {
+          "@id": "urn:solid-server:default:relative-path",
         },
-        {
-          "@type": "RegexRule",
-          "regex": { "@id": "urn:solid-server:default:relative-path" },
-          "store": {
-            "comment":
-              "A more complex example with 3 different stores being routed to.",
-            "@type": "RepresentationConvertingStore",
-            "source": {
-              "@type": "LDESStore",
-              "id": "http://mine.org/testing",
-              "base": { "@id": "urn:solid-server:default:variable:baseUrl" },
-              "relativePath": {
-                "@id": "urn:solid-server:default:relative-path",
+        "views": [
+          {
+            "@type": "PrefixView",
+            "prefix": "default",
+            "view": {
+              "@type": "MongoSDSView",
+              "descriptionId":
+                "http://localhost:3000/ldes/#timestampFragmentation",
+              "streamId": "https://w3id.org/sds#Stream",
+              "db": {
+                "@id": "urn:solid-server:default:DBConfig",
               },
-              "views": [
-                {
-                  "@type": "PrefixView",
-                  "prefix": "default",
-                  "view": {
-                    "@type": "MongoSDSView",
-                    "descriptionId":
-                      "http://localhost:3000/ldes/#timestampFragmentation",
-                    "streamId": "https://w3id.org/sds#Stream",
-                    "db": {
-                      "@id": "urn:solid-server:default:DBConfig",
-                    },
-                    "freshDuration": 240,
-                  },
-                },
-              ],
-            },
-            "options_outConverter": {
-              "@id": "urn:solid-server:default:RepresentationConverter",
+              "freshDuration": 240,
             },
           },
-        },
-      ],
+        ],
+      },
+      "options_outConverter": {
+        "@id": "urn:solid-server:default:RepresentationConverter",
+      },
     },
     {
       "@id": "urn:solid-server:default:MemoryResourceStore",
@@ -150,7 +122,7 @@ async function start(dbConfig, views) {
       "freshDuration": 240,
     },
   }));
-  basicConfig["@graph"][1].rules[1].store.source.views = viewsJson;
+  basicConfig["@graph"][0].source.views = viewsJson;
 
   const path = "/tmp/config.json";
   await fs.writeFile(path, JSON.stringify(basicConfig), { flag: "w" });
@@ -164,7 +136,9 @@ async function start(dbConfig, views) {
       typeChecking: false,
     };
     console.log(config, path);
-    await runner.run(config, [path]);
+    await runner.run(config, [path], {
+      "urn:solid-server:default:variable:baseUrl": "http://ldesserver:3000/",
+    });
   };
 }
-exports.test = test;
+exports.start = start;

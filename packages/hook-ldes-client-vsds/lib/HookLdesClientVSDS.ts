@@ -16,20 +16,23 @@ export class HookLdesClientVSDS implements Hook {
   public readonly dockerfileClient: string;
   public readonly resourceConstraints: DockerResourceConstraints;
   public readonly clientLogLevel: string;
-  public readonly type: string;
+  public readonly networkName?: string;
+  public readonly quiet?: boolean;
 
   public constructor(
     ldesEndpoint: string,
     dockerfileClient: string,
     resourceConstraints: DockerResourceConstraints,
     clientLogLevel: string,
-    type: string,
+    networkName?: string,
+    quiet?: boolean,
   ) {
-    this.type = type;
     this.dockerfileClient = dockerfileClient;
     this.resourceConstraints = resourceConstraints;
     this.clientLogLevel = clientLogLevel;
     this.ldesEndpoint = ldesEndpoint;
+    this.networkName = networkName;
+    this.quiet = quiet;
   }
 
   public getDockerImageName(context: ITaskContext): string {
@@ -46,20 +49,6 @@ export class HookLdesClientVSDS implements Hook {
     await context.docker.imagePuller.pull({
       repoTag: "seacoal/ldes-client",
     });
-    /// We could also build from Dockerfile
-    // await context.docker.imageBuilder.build({
-    //   cwd: context.experimentPaths.root,
-    //   dockerFile: this.dockerfileClient,
-    //   auxiliaryFiles: [this.configClient],
-    //   imageName: this.getDockerImageName(context),
-    //   buildArgs: {
-    //     CONFIG_CLIENT: this.configClient,
-    //     QUERY_TIMEOUT: `${this.queryTimeout}`,
-    //     MAX_MEMORY: `${this.maxMemory}`,
-    //     LOG_LEVEL: this.clientLogLevel,
-    //   },
-    //   logger: context.logger,
-    // });
   }
 
   public async start(
@@ -67,8 +56,15 @@ export class HookLdesClientVSDS implements Hook {
     options?: IHookStartOptions,
   ): Promise<ProcessHandler> {
     console.log("Starting ldes client on url", this.ldesEndpoint);
-    return await context.docker.containerCreator.start({
-      containerName: "ldes-client-" + this.type,
+
+    const networkName = this.networkName
+      ? await context.docker.networkCreator.find(this.networkName)
+      : undefined;
+
+    console.log("Attaching to network", this.networkName, networkName);
+
+    const container = await context.docker.containerCreator.start({
+      containerName: "ldes-client",
       imageName: "seacoal/ldes-client",
       resourceConstraints: this.resourceConstraints,
       cmdArgs: [this.ldesEndpoint],
@@ -77,11 +73,20 @@ export class HookLdesClientVSDS implements Hook {
         "logs",
         "ldes-client-log.txt",
       ),
+      hostConfig: {
+        NetworkMode: networkName?.network.id,
+      },
       statsFilePath: Path.join(
         context.experimentPaths.output,
         "stats-ldes-client.csv",
       ),
     });
+
+    if (!this.quiet) {
+      container.outputStream.pipe(process.stdout);
+    }
+
+    return container;
   }
 
   public async clean(
@@ -89,7 +94,7 @@ export class HookLdesClientVSDS implements Hook {
     cleanTargets: ICleanTargets,
   ): Promise<void> {
     if (cleanTargets.docker) {
-      await context.docker.containerCreator.remove("ldes-client-" + this.type);
+      await context.docker.containerCreator.remove("ldes-client");
     }
   }
 }

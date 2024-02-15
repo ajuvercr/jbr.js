@@ -104,14 +104,14 @@ js:SolidServer a js:JsProcess;
 
 [ ] a js:SolidServer;
   js:database [
-    js:metadata "MUMO_META";
-    js:data "MUMO_DATA";
-    js:index "MUMO_INDEX";
-    js:url "mongodb://localhost:27017/mumotest"
+    js:metadata "META";
+    js:data "DATA";
+    js:index "INDEX";
+    js:url "mongodb://mongo:27017/mumotest";
   ];
   js:view [
     js:prefix "default";
     js:stream "https://w3id.org/sds#Stream";
-    js:description "http://localhost:3000/ldes/#timestampFragmentation"; 
+    js:description "http://localhost:3000/ldes/#timestampFragmentation";
   ].
 

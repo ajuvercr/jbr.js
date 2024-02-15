@@ -13,11 +13,8 @@
   "license": "ISC",
   "dependencies": {
     "@ajuvercr/js-runner": "0.1.14",
-    "ldes-solid-server": "^0.0.10",
+    "ldes-solid-server": "^0.0.12",
     "@treecg/sds-storage-writer-mongo": "^0.1.0",
     "sds-processors": "^0.1.4"
-  },
-  "peerDependencies": {
-    "@solid/community-server": "5.x.x"
   }
 }

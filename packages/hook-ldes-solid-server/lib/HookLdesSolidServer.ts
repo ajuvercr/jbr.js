@@ -23,6 +23,9 @@ export class HookLdesSolidServer implements Hook {
   public readonly env: string[];
   public readonly dataGlob: string[];
   public readonly ingestPort: number;
+  public readonly networkName?: string;
+  public readonly imageName?: string;
+  public readonly quiet?: boolean;
 
   public constructor(
     dockerfileClient: string,
@@ -32,6 +35,8 @@ export class HookLdesSolidServer implements Hook {
     env: string[],
     dataGlob: string[],
     ingestPort: number,
+    networkName?: string,
+    quiet?: boolean,
   ) {
     console.log("HookLdesSolidServer started");
     this.dockerfileClient = dockerfileClient;
@@ -40,6 +45,8 @@ export class HookLdesSolidServer implements Hook {
     this.env = env;
     this.dataGlob = dataGlob;
     this.ingestPort = ingestPort;
+    this.networkName = networkName;
+    this.quiet = quiet;
   }
 
   public getDockerImageName(context: ITaskContext, type: string): string {
@@ -79,7 +86,6 @@ export class HookLdesSolidServer implements Hook {
     context: ITaskContext,
     options?: IHookStartOptions,
   ): Promise<ProcessHandler> {
-
     const envs = this.env.flatMap((x) => {
       if (process.env[x]) {
         return [`${x}=${process.env[x]}`];
@@ -91,12 +97,20 @@ export class HookLdesSolidServer implements Hook {
     // Create shared network
     const networkHandler = options?.docker?.network
       ? undefined
-      : await context.docker.networkCreator.create({
-          Name: this.getDockerImageName(context, "network"),
-        });
+      : await context.docker.networkCreator.find(
+          this.networkName ||
+            this.getDockerImageName(
+              context,
+              this.getDockerImageName(context, "network"),
+            ),
+          true,
+        );
+
+    console.log("Attaching to network ", this.networkName, networkHandler);
+
     const network = options?.docker?.network || networkHandler!.network.id;
 
-    console.log("network created");
+    console.log("network created", network);
     console.log("Starting mongo container");
     const mongo = await context.docker.containerCreator.start({
       containerName: "mongo",
@@ -118,7 +132,7 @@ export class HookLdesSolidServer implements Hook {
 
     console.log("Starting pipeline container");
     const pipeline = await context.docker.containerCreator.start({
-      containerName: "ldes-solid-server",
+      containerName: "ldes-solid-ingest",
       imageName: this.getDockerImageName(context, "server"),
       hostConfig: {
         PortBindings: {
@@ -130,21 +144,56 @@ export class HookLdesSolidServer implements Hook {
       logFilePath: Path.join(
         context.experimentPaths.output,
         "logs",
+        "ldes-solid-ingest.txt",
+      ),
+      statsFilePath: Path.join(
+        context.experimentPaths.output,
+        "stats-ldes-solid-server-ingest.csv",
+      ),
+      cmdArgs: ["pipeline.ttl"],
+      env: envs,
+    });
+    const ingestStats = await pipeline.startCollectingStats();
+
+    await new Promise((res) => setTimeout(res, 3000));
+    await this.ingest();
+
+    ingestStats();
+    await pipeline.close();
+
+    console.log("Context experiment root", context.experimentPaths.root);
+    const server = await context.docker.containerCreator.start({
+      containerName: "ldesserver",
+      imageName: this.getDockerImageName(context, "server"),
+      hostConfig: {
+        PortBindings: {
+          "3000/tcp": [{ HostPort: `3000` }],
+        },
+        NetworkMode: network,
+        Binds: [
+          // `${Path.join(context.experimentPaths.input, "node_modules")}:/tmp/node_modules`,
+        ],
+      },
+      logFilePath: Path.join(
+        context.experimentPaths.output,
+        "logs",
         "ldes-solid-server.txt",
       ),
       statsFilePath: Path.join(
         context.experimentPaths.output,
         "stats-ldes-solid-server.csv",
       ),
-      cmdArgs: ["pipeline.ttl"],
+      cmdArgs: ["server.ttl"],
       env: envs,
     });
-    pipeline.outputStream.pipe(process.stdout);
 
-    await new Promise((res) => setTimeout(res, 3000));
-    await this.ingest();
+    if (!this.quiet) {
+      server.outputStream.pipe(process.stdout);
+    }
 
-    return new ProcessHandlerComposite([pipeline, mongo]);
+    await new Promise((res) => setTimeout(res, 8000));
+
+    return new ProcessHandlerComposite([server, mongo]);
   }
 
   private async ingest() {
@@ -180,7 +229,7 @@ export class HookLdesSolidServer implements Hook {
       content = lines.join("\n");
 
       const url = `http://localhost:${this.ingestPort}`;
-      console.log("Yeeting files to", url);
+      console.log("Ingesting  file to", url);
       const resp = await fetch(url, {
         body: content,
         method: "POST",
@@ -190,7 +239,7 @@ export class HookLdesSolidServer implements Hook {
         console.log(resp.status, resp.statusText);
       }
 
-      await new Promise(res => setTimeout(res, 2000));
+      await new Promise((res) => setTimeout(res, 2000));
     }
   }
 
@@ -201,10 +250,11 @@ export class HookLdesSolidServer implements Hook {
     console.log("Cleaning", cleanTargets);
     if (cleanTargets.docker) {
       await context.docker.networkCreator.remove(
-        this.getDockerImageName(context, "network"),
+        this.networkName || this.getDockerImageName(context, "network"),
       );
       await context.docker.containerCreator.remove("mongo");
-      await context.docker.containerCreator.remove("ldes-solid-server");
+      await context.docker.containerCreator.remove("ldes-solid-ingest");
+      await context.docker.containerCreator.remove("ldesServer");
     }
   }
 }
