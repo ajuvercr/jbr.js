@@ -1,5 +1,6 @@
 import Path from "path";
 import {
+  DockerResourceConstraints,
   Hook,
   ICleanTargets,
   IExperimentPaths,
@@ -28,10 +29,12 @@ export class HookLdesSolidServer implements Hook {
   public readonly imageName?: string;
   public readonly quiet?: boolean;
 
+  public readonly resourceConstraints: DockerResourceConstraints;
+
   public constructor(
     dockerfileClient: string,
-    // auxiliaryFiles from templates, will be mapped to input
     pageSize: number,
+    resourceConstraints: DockerResourceConstraints,
     auxiliaryFiles: string[],
     clientPort: number,
     env: string[],
@@ -42,11 +45,12 @@ export class HookLdesSolidServer implements Hook {
   ) {
     this.pageSize = pageSize;
     console.log("HookLdesSolidServer started");
+    this.resourceConstraints = resourceConstraints;
     this.dockerfileClient = dockerfileClient;
     this.auxiliaryFiles = auxiliaryFiles;
-    this.clientPort = clientPort;
     this.env = env;
     this.dataGlob = dataGlob;
+    this.clientPort = clientPort;
     this.ingestPort = ingestPort;
     this.networkName = networkName;
     this.quiet = quiet;
@@ -61,7 +65,7 @@ export class HookLdesSolidServer implements Hook {
 
   public async prepare(
     context: ITaskContext,
-    forceOverwriteGenerated: boolean,
+    _forceOverwriteGenerated: boolean,
   ): Promise<void> {
     await new HookHandlerLdesSolidServer().init(context.experimentPaths, this);
     // Build client Dockerfile
@@ -98,8 +102,6 @@ export class HookLdesSolidServer implements Hook {
     });
     envs.push(`PAGE_SIZE=${this.pageSize}`);
 
-   
-
     // Create shared network
     const networkHandler = options?.docker?.network
       ? undefined
@@ -112,7 +114,7 @@ export class HookLdesSolidServer implements Hook {
           true,
         );
 
-    console.log("Attaching to network ", this.networkName, networkHandler);
+    console.log("Attaching to network ", this.networkName);
 
     const network = options?.docker?.network || networkHandler!.network.id;
 
@@ -176,10 +178,8 @@ export class HookLdesSolidServer implements Hook {
           "3000/tcp": [{ HostPort: `3000` }],
         },
         NetworkMode: network,
-        Binds: [
-          // `${Path.join(context.experimentPaths.input, "node_modules")}:/tmp/node_modules`,
-        ],
       },
+      resourceConstraints: this.resourceConstraints,
       logFilePath: Path.join(
         context.experimentPaths.output,
         "logs",

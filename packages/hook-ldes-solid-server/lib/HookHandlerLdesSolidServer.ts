@@ -14,21 +14,28 @@ export class HookHandlerLdesSolidServer extends HookHandler<HookLdesSolidServer>
   }
 
   public getDefaultParams(
-    experimentPaths: IExperimentPaths,
+    _experimentPaths: IExperimentPaths,
   ): Record<string, any> {
     return {
-      dockerfileClient: "input/dockerfiles/Dockerfile-client",
+      dockerfileClient: "dockerfiles/Dockerfile-client",
+      pageSize: 150,
       resourceConstraints: {
         "@type": "StaticDockerResourceConstraints",
         cpu_percentage: 100,
       },
-      config: "input/",
-      contextClient: "input/context-client.json",
-      additionalBinds: [],
-      clientPort: 3_001,
-      clientLogLevel: "info",
-      queryTimeout: 300,
-      maxMemory: 8_192,
+      auxiliaryFiles: [
+        "input/package.json",
+        "input/pipeline.ttl",
+        "input/server.ttl",
+        "input/server.js",
+        "input/metadataIn.ttl",
+      ],
+      clientPort: 3_000,
+      env: ["DB_URL", "PAGE_SIZE"],
+      dataGlob: ["../vsds/bear-b-dataset/day/**/*"],
+      ingestPort: 3_001,
+      networkName: "ldesNetwork",
+      quiet: true,
     };
   }
 
