@@ -1,5 +1,6 @@
 import type Dockerode from "dockerode";
 import * as fs from "fs-extra";
+import { option } from "yargs";
 import { DockerContainerHandler } from "./DockerContainerHandler";
 import type { DockerResourceConstraints } from "./DockerResourceConstraints";
 
@@ -21,10 +22,15 @@ export class DockerContainerCreator {
     options: IDockerContainerCreatorArgs,
   ): Promise<DockerContainerHandler> {
     // Initialize Docker container
+    const exposedPorts: { [port: string]: {} } = {};
+    for (let port of options.exposedPorts || []) {
+      exposedPorts[port] = {};
+    }
     const container = await this.dockerode.createContainer({
       name: options.containerName,
       Hostname: options.containerName,
       Image: options.imageName,
+      ExposedPorts: exposedPorts,
       Tty: true,
       Cmd: options.cmdArgs,
       AttachStdout: true,
@@ -89,4 +95,5 @@ export interface IDockerContainerCreatorArgs {
   logFilePath?: string;
   statsFilePath?: string;
   env?: string[];
+  exposedPorts?: string[];
 }

@@ -9,7 +9,8 @@ import {
   ProcessHandler,
   ProcessHandlerComposite,
 } from "jbr";
-import { glob } from "glob";
+import { glob, globSync } from "glob";
+
 
 import { HookHandlerLdesSolidServer } from "./HookHandlerLdesSolidServer";
 import { readFile } from "fs/promises";
@@ -29,17 +30,17 @@ export class HookLdesSolidServer implements Hook {
   public readonly imageName?: string;
   public readonly quiet?: boolean;
 
-  public readonly resourceConstraints: DockerResourceConstraints;
+  public readonly resourceConstraints?: DockerResourceConstraints;
 
   public constructor(
     dockerfileClient: string,
     pageSize: number,
-    resourceConstraints: DockerResourceConstraints,
     auxiliaryFiles: string[],
     clientPort: number,
     env: string[],
     dataGlob: string[],
     ingestPort: number,
+    resourceConstraints?: DockerResourceConstraints,
     networkName?: string,
     quiet?: boolean,
   ) {
@@ -203,6 +204,7 @@ export class HookLdesSolidServer implements Hook {
   }
 
   private async ingest() {
+    console.log("GLobbing", this.dataGlob);
     const dataFiles = await glob(this.dataGlob, { nodir: true });
     dataFiles.sort();
     let i = 0;
@@ -260,7 +262,7 @@ export class HookLdesSolidServer implements Hook {
       );
       await context.docker.containerCreator.remove("mongo");
       await context.docker.containerCreator.remove("ldes-solid-ingest");
-      await context.docker.containerCreator.remove("ldesServer");
+      await context.docker.containerCreator.remove("ldesserver");
     }
   }
 }
