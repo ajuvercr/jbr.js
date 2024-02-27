@@ -10,7 +10,6 @@ import {
 } from "jbr";
 import { glob } from "glob";
 
-import { HookHandlerLdesSolidServer } from "./HookHandlerLdesVsdsServer";
 import { readFile, writeFile } from "fs/promises";
 import { Configs, DockerConfigs } from "./Configs";
 
@@ -68,11 +67,9 @@ export class HookLdesVsdsServer implements Hook {
 
   public async prepare(
     context: ITaskContext,
-    forceOverwriteGenerated: boolean,
+    _forceOverwriteGenerated: boolean,
   ): Promise<void> {
     console.log("Prepare vsds server");
-    await new HookHandlerLdesSolidServer().init(context.experimentPaths, this);
-
     for (let config of Object.values(Configs)) {
       console.log("Writing file to", config.name);
       await writeFile(
@@ -131,11 +128,11 @@ export class HookLdesVsdsServer implements Hook {
       logFilePath: Path.join(
         context.experimentPaths.output,
         "logs",
-        "ldes-solid-mongo.txt",
+        "ldes-vsds-mongo.txt",
       ),
       statsFilePath: Path.join(
         context.experimentPaths.output,
-        "stats-ldes-solid-mongo.csv",
+        "stats-ldes-vsds-mongo.csv",
       ),
       env: envs,
     });
@@ -161,11 +158,11 @@ export class HookLdesVsdsServer implements Hook {
       logFilePath: Path.join(
         context.experimentPaths.output,
         "logs",
-        "ldes-solid-mongo.txt",
+        "ldes-vsds-mongo.txt",
       ),
       statsFilePath: Path.join(
         context.experimentPaths.output,
-        "stats-ldes-solid-mongo.csv",
+        "stats-ldes-vsds-mongo.csv",
       ),
       env: envs,
       exposedPorts: ["8080/tcp"],
@@ -223,7 +220,7 @@ export class HookLdesVsdsServer implements Hook {
     //   server.outputStream.pipe(process.stdout);
     // }
 
-    console.log("Ingestion complete")
+    console.log("Ingestion complete");
     await new Promise((res) => setTimeout(res, 3000));
 
     return new ProcessHandlerComposite([server, mongo]);
@@ -232,30 +229,18 @@ export class HookLdesVsdsServer implements Hook {
   private async ingest() {
     // Create eventstream
     //
-    try {
-      console.log(
-        "Yeet an eventstream! http://localhost:8080/admin/api/v1/eventstreams",
-        Configs.eventStreamConfig.config(),
-      );
 
-      let resp = await fetch(
-        "http://localhost:8080/admin/api/v1/eventstreams",
-        {
-          headers: { "Content-Type": "text/turtle" },
-          method: "POST",
-          body: Configs.eventStreamConfig.config(),
-        },
-      );
-      if (!resp.ok) {
-        console.log("Fetch failed :(");
-        console.log(resp);
-        throw "NOT OKAY, OKAY? Evenstream creation";
-      }
-    } catch (ex: any) {
-      console.error("Fetch failed :(", ex);
+    let resp = await fetch("http://localhost:8080/admin/api/v1/eventstreams", {
+      headers: { "Content-Type": "text/turtle" },
+      method: "POST",
+      body: Configs.eventStreamConfig.config(),
+    });
+    if (!resp.ok) {
+      console.log("Fetch failed :(");
+      throw "NOT OKAY, OKAY? Evenstream creation";
     }
 
-    let resp = await fetch(
+    resp = await fetch(
       "http://localhost:8080/admin/api/v1/eventstreams/bearb/views",
       {
         headers: { "Content-Type": "text/turtle" },
@@ -268,8 +253,7 @@ export class HookLdesVsdsServer implements Hook {
       throw "NOT OKAY, OKAY? View creation";
     }
 
-    console.log("GLobbing ", this.dataGlob)
-    const dataFiles = await glob(this.dataGlob[0], { nodir: true });
+    const dataFiles = await glob(this.dataGlob, { nodir: true });
     dataFiles.sort();
     let i = 0;
 

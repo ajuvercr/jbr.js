@@ -103,6 +103,7 @@ export class ExperimentBearB implements Experiment {
       ["pageSize"],
     );
 
+    console.log("Closing")
     // Close process safely
     await closeProcess();
   }
