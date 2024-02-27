@@ -241,7 +241,7 @@ export class HookLdesVsdsServer implements Hook {
     }
 
     resp = await fetch(
-      "http://localhost:8080/admin/api/v1/eventstreams/bearb/views",
+      "http://localhost:8080/admin/api/v1/eventstreams/ldes/views",
       {
         headers: { "Content-Type": "text/turtle" },
         method: "POST",

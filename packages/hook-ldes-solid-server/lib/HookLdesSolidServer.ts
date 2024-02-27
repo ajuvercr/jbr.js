@@ -3,13 +3,12 @@ import {
   DockerResourceConstraints,
   Hook,
   ICleanTargets,
-  IExperimentPaths,
   IHookStartOptions,
   ITaskContext,
   ProcessHandler,
   ProcessHandlerComposite,
 } from "jbr";
-import { glob, globSync } from "glob";
+import { glob } from "glob";
 
 
 import { HookHandlerLdesSolidServer } from "./HookHandlerLdesSolidServer";

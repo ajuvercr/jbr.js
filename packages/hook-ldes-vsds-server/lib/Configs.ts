@@ -6,7 +6,7 @@ type ConfigElement = {
 export const DockerConfigs = {
   server: {
     tag: "ldes/ldes-server:2.8.0-SNAPSHOT",
-    container: "vsds-server",
+    container: "ldesserver",
   },
 
   orchestrator: {
@@ -30,7 +30,8 @@ springdoc:
     swagger-ui:
         path: /v1/swagger
 ldes-server:
-    host-name: "http://vsds-server:8080"
+    host-name: "http://ldesserver:8080"
+    use-relative-url: true
 management:
     tracing:
         enabled: false
@@ -70,7 +71,7 @@ orchestrator:
       outputs:
         - name: be.vlaanderen.informatievlaanderen.ldes.ldio.LdioHttpOut
           config:
-            endpoint: http://vsds-server:8080/bearb
+            endpoint: http://ldesserver:8080/ldes
             content-type: application/n-quads
 
 spring:
@@ -116,7 +117,7 @@ WHERE {
 @prefix prov:    <http://www.w3.org/ns/prov#> .
 @prefix sh:      <http://www.w3.org/ns/shacl#> .
 
-</bearb> a ldes:EventStream ;
+</ldes> a ldes:EventStream ;
   tree:shape [ a sh:NodeShape ] ;
   ldes:timestampPath prov:generatedAtTime ;
   ldes:versionOfPath dcterms:isVersionOf .
@@ -130,7 +131,7 @@ WHERE {
 @prefix ldes:   <https://w3id.org/ldes#> .
 @prefix prov:   <http://www.w3.org/ns/prov#> .
 
-</bearb/paged> a tree:Node ;
+</ldes/paged> a tree:Node ;
   tree:viewDescription [
     a tree:ViewDescription ;
     tree:fragmentationStrategy  () ;

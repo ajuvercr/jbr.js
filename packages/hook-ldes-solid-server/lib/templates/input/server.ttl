@@ -110,7 +110,7 @@ js:SolidServer a js:JsProcess;
     js:url "mongodb://mongo:27017/mumotest";
   ];
   js:view [
-    js:prefix "default";
+    js:prefix "paged";
     js:stream "https://w3id.org/sds#Stream";
     js:description "http://localhost:3000/ldes/#timestampFragmentation";
   ].

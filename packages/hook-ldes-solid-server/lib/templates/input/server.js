@@ -137,7 +137,8 @@ async function start(dbConfig, views) {
     };
     console.log(config, path);
     await runner.run(config, [path], {
-      "urn:solid-server:default:variable:baseUrl": "http://ldesserver:3000/",
+      "urn:solid-server:default:variable:baseUrl": "http://ldesserver:8080/",
+      "urn:solid-server:default:variable:port": "8080",
     });
   };
 }
