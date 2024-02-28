@@ -2,7 +2,6 @@ import Path from "path";
 import {
   Hook,
   ICleanTargets,
-  IExperimentPaths,
   IHookStartOptions,
   ITaskContext,
   ProcessHandler,
@@ -54,14 +53,13 @@ export class HookLdesVsdsServer implements Hook {
 
   private clientFile(context: ITaskContext, file: string): string {
     const out = Path.join(context.experimentPaths.input, file);
-    console.log("File", out);
     return out;
   }
 
   public getDockerImageName(context: ITaskContext, type: string): string {
     return context.docker.imageBuilder.getImageName(
       context,
-      `ldes-solid-${type}`,
+      `ldes-vsds-${type}`,
     );
   }
 
@@ -92,15 +90,6 @@ export class HookLdesVsdsServer implements Hook {
     context: ITaskContext,
     options?: IHookStartOptions,
   ): Promise<ProcessHandler> {
-    const envs = this.env.flatMap((x) => {
-      if (process.env[x]) {
-        return [`${x}=${process.env[x]}`];
-      } else {
-        return [];
-      }
-    });
-    envs.push(`PAGE_SIZE=${this.pageSize}`);
-
     // Create shared network
     const networkHandler = options?.docker?.network
       ? undefined
@@ -114,10 +103,8 @@ export class HookLdesVsdsServer implements Hook {
         );
 
     console.log("Attaching to network ", this.networkName, networkHandler);
-
     const network = options?.docker?.network || networkHandler!.network.id;
 
-    console.log("network created", network);
     console.log("Starting mongo container");
     const mongo = await context.docker.containerCreator.start({
       containerName: DockerConfigs.mongo.container,
@@ -134,7 +121,6 @@ export class HookLdesVsdsServer implements Hook {
         context.experimentPaths.output,
         "stats-ldes-vsds-mongo.csv",
       ),
-      env: envs,
     });
 
     await new Promise((res) => setTimeout(res, 3000));
@@ -164,7 +150,6 @@ export class HookLdesVsdsServer implements Hook {
         context.experimentPaths.output,
         "stats-ldes-vsds-mongo.csv",
       ),
-      env: envs,
       exposedPorts: ["8080/tcp"],
     });
 
@@ -223,7 +208,7 @@ export class HookLdesVsdsServer implements Hook {
     console.log("Ingestion complete");
     await new Promise((res) => setTimeout(res, 3000));
 
-    return new ProcessHandlerComposite([server, mongo]);
+    return new ProcessHandlerComposite([server, mongo, pipeline]);
   }
 
   private async ingest() {
@@ -294,3 +279,4 @@ export class HookLdesVsdsServer implements Hook {
     }
   }
 }
+

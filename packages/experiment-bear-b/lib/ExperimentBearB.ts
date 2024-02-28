@@ -106,6 +106,8 @@ export class ExperimentBearB implements Experiment {
     console.log("Closing")
     // Close process safely
     await closeProcess();
+
+    console.log("Here");
   }
 
   /**

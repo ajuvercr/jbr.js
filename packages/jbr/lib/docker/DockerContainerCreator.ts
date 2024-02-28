@@ -1,6 +1,5 @@
 import type Dockerode from "dockerode";
 import * as fs from "fs-extra";
-import { option } from "yargs";
 import { DockerContainerHandler } from "./DockerContainerHandler";
 import type { DockerResourceConstraints } from "./DockerResourceConstraints";
 
