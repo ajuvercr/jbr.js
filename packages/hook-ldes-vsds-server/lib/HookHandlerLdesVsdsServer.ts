@@ -1,5 +1,3 @@
-import Path from "path";
-import * as fs from "fs-extra";
 import type { IExperimentPaths } from "jbr";
 import { HookHandler } from "jbr";
 import { HookLdesVsdsServer } from "./HookLdesVsdsServer";
@@ -7,10 +5,9 @@ import { HookLdesVsdsServer } from "./HookLdesVsdsServer";
 /**
  * Hook handler for a Comunica-based SPARQL endpoint.
  */
-export class HookHandlerLdesSolidServer extends HookHandler<HookLdesVsdsServer> {
+export class HookHandlerLdesVsdsServer extends HookHandler<HookLdesVsdsServer> {
   public constructor() {
     super("ldes-vsds-server", HookLdesVsdsServer.name);
-    console.log("HookHandlerLdesSolidServer started");
   }
 
   public getDefaultParams(

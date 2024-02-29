@@ -10,7 +10,6 @@ import {
 } from "jbr";
 import { glob } from "glob";
 
-
 import { HookHandlerLdesSolidServer } from "./HookHandlerLdesSolidServer";
 import { readFile } from "fs/promises";
 
@@ -175,7 +174,7 @@ export class HookLdesSolidServer implements Hook {
       imageName: this.getDockerImageName(context, "server"),
       hostConfig: {
         PortBindings: {
-          "3000/tcp": [{ HostPort: `3000` }],
+          "3000/tcp": [{ HostPort: `8080` }],
         },
         NetworkMode: network,
       },
@@ -189,6 +188,7 @@ export class HookLdesSolidServer implements Hook {
         context.experimentPaths.output,
         "stats-ldes-solid-server.csv",
       ),
+      exposedPorts: ["8080/tcp"],
       cmdArgs: ["server.ttl"],
       env: envs,
     });
@@ -197,7 +197,7 @@ export class HookLdesSolidServer implements Hook {
       server.outputStream.pipe(process.stdout);
     }
 
-    await new Promise((res) => setTimeout(res, 8000));
+    await new Promise((res) => setTimeout(res, 100000));
 
     return new ProcessHandlerComposite([server, mongo]);
   }

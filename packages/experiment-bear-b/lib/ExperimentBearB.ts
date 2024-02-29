@@ -83,7 +83,11 @@ export class ExperimentBearB implements Experiment {
         count: 1,
         error: false,
         timestamps: [time],
-        metadata: { pageSize: this.pageSize },
+        metadata: {
+          pageSize: this.pageSize,
+          server: this.hookLdesServer.constructor.name,
+          client: this.hookLdesClient.constructor.name,
+        },
       };
     }
 
@@ -100,10 +104,10 @@ export class ExperimentBearB implements Experiment {
       results,
       Path.join(resultsOutput, "client-times.csv"),
       false,
-      ["pageSize"],
+      ["pageSize", "server", "client"],
     );
 
-    console.log("Closing")
+    console.log("Closing");
     // Close process safely
     await closeProcess();
 

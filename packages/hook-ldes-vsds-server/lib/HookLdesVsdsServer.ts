@@ -193,7 +193,7 @@ export class HookLdesVsdsServer implements Hook {
     pipeline.outputStream.pipe(process.stdout);
 
     const pipelineStats = await pipeline.startCollectingStats();
-    await new Promise((res) => setTimeout(res, 30000));
+    await new Promise((res) => setTimeout(res, 100000));
 
     console.log("Starting ingest");
     await this.ingest();
@@ -201,9 +201,9 @@ export class HookLdesVsdsServer implements Hook {
     serverStats();
     pipelineStats();
 
-    // if (!this.quiet) {
-    //   server.outputStream.pipe(process.stdout);
-    // }
+    if (!this.quiet) {
+      server.outputStream.pipe(process.stdout);
+    }
 
     console.log("Ingestion complete");
     await new Promise((res) => setTimeout(res, 3000));
