@@ -25,6 +25,7 @@
 <> owl:imports <./node_modules/sds-processors/configs/ldesify.ttl>.
 [ ] a js:Ldesify;
   js:input <jr>;
+  js:checkProps false;
   js:output <ldes-raw/writer>;
   js:path <./state.json>.
 

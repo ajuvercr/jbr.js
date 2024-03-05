@@ -123,7 +123,7 @@ export class HookLdesVsdsServer implements Hook {
       ),
     });
 
-    await new Promise((res) => setTimeout(res, 3000));
+    await new Promise((res) => setTimeout(res, 5000));
     console.log("Starting server");
     const server = await context.docker.containerCreator.start({
       containerName: DockerConfigs.server.container,
@@ -193,7 +193,7 @@ export class HookLdesVsdsServer implements Hook {
     pipeline.outputStream.pipe(process.stdout);
 
     const pipelineStats = await pipeline.startCollectingStats();
-    await new Promise((res) => setTimeout(res, 100000));
+    await new Promise((res) => setTimeout(res, 300000));
 
     console.log("Starting ingest");
     await this.ingest();
@@ -206,7 +206,7 @@ export class HookLdesVsdsServer implements Hook {
     }
 
     console.log("Ingestion complete");
-    await new Promise((res) => setTimeout(res, 3000));
+    await new Promise((res) => setTimeout(res, 4000));
 
     return new ProcessHandlerComposite([server, mongo, pipeline]);
   }
@@ -260,7 +260,7 @@ export class HookLdesVsdsServer implements Hook {
         }
       }
 
-      await new Promise((res) => setTimeout(res, 2000));
+      await new Promise((res) => setTimeout(res, 500));
     }
   }
 

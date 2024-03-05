@@ -162,7 +162,7 @@ export class HookLdesSolidServer implements Hook {
     });
     const ingestStats = await pipeline.startCollectingStats();
 
-    await new Promise((res) => setTimeout(res, 3000));
+    await new Promise((res) => setTimeout(res, 10000));
     await this.ingest();
 
     ingestStats();
