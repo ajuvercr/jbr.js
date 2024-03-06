@@ -7,8 +7,9 @@ import {
   ITaskContext,
   ProcessHandler,
   ProcessHandlerComposite,
+  StaticDockerResourceConstraints,
 } from "jbr";
-import { glob } from "glob";
+import * as glob from "glob";
 
 import { HookHandlerLdesSolidServer } from "./HookHandlerLdesSolidServer";
 import { readFile } from "fs/promises";
@@ -125,6 +126,12 @@ export class HookLdesSolidServer implements Hook {
       hostConfig: {
         NetworkMode: network,
       },
+      resourceConstraints: new StaticDockerResourceConstraints(
+        {},
+        {
+          limit: "8g",
+        },
+      ),
       logFilePath: Path.join(
         context.experimentPaths.output,
         "logs",
@@ -204,7 +211,9 @@ export class HookLdesSolidServer implements Hook {
 
   private async ingest() {
     console.log("GLobbing", this.dataGlob);
-    const dataFiles = await glob(this.dataGlob, { nodir: true });
+    const dataFiles = glob.globSync
+      ? glob.globSync(this.dataGlob, { nodir: true })
+      : glob.sync(this.dataGlob, { nodir: true });
     dataFiles.sort();
     let i = 0;
 

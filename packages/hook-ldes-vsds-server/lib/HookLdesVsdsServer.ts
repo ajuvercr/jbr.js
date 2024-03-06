@@ -6,6 +6,7 @@ import {
   ITaskContext,
   ProcessHandler,
   ProcessHandlerComposite,
+  StaticDockerResourceConstraints,
 } from "jbr";
 import { glob } from "glob";
 
@@ -109,6 +110,12 @@ export class HookLdesVsdsServer implements Hook {
     const mongo = await context.docker.containerCreator.start({
       containerName: DockerConfigs.mongo.container,
       imageName: DockerConfigs.mongo.tag,
+      resourceConstraints: new StaticDockerResourceConstraints(
+        {},
+        {
+          limit: "8g",
+        },
+      ),
       hostConfig: {
         NetworkMode: network,
       },
@@ -238,7 +245,9 @@ export class HookLdesVsdsServer implements Hook {
       throw "NOT OKAY, OKAY? View creation";
     }
 
-    const dataFiles = await glob(this.dataGlob, { nodir: true });
+    const dataFiles = glob.globSync
+      ? glob.globSync(this.dataGlob, { nodir: true })
+      : glob.sync(this.dataGlob, { nodir: true });
     dataFiles.sort();
     let i = 0;
 
@@ -279,4 +288,3 @@ export class HookLdesVsdsServer implements Hook {
     }
   }
 }
-
